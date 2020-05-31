@@ -1,0 +1,73 @@
+CREATE DATABASE `portfolio_tracker` /*!40100 DEFAULT CHARACTER SET utf8 */;
+
+CREATE TABLE `d_corporate_action` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `action` varchar(45) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
+
+CREATE TABLE `d_portfolio` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `isin` varchar(50) NOT NULL,
+  `sec_name` varchar(100) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `isin_UNIQUE` (`isin`)
+) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8;
+
+CREATE TABLE `f_corporate_action` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `sec_id` int(11) NOT NULL,
+  `action_id` int(11) NOT NULL,
+  `action_date` date NOT NULL,
+  `description` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_fca_port_id_idx` (`sec_id`),
+  KEY `fk_fca_corp_id_idx` (`action_id`),
+  CONSTRAINT `fk_fca_corp_id` FOREIGN KEY (`action_id`) REFERENCES `d_corporate_action` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_fca_port_id` FOREIGN KEY (`sec_id`) REFERENCES `d_portfolio` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8;
+
+CREATE TABLE `f_daily_data` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `sec_id` int(11) NOT NULL,
+  `txn_date` date NOT NULL,
+  `open` decimal(10,3) DEFAULT NULL,
+  `close` decimal(10,3) DEFAULT NULL,
+  `high` decimal(10,3) DEFAULT NULL,
+  `low` decimal(10,3) DEFAULT NULL,
+  `last` decimal(10,3) DEFAULT NULL,
+  `no_trade` int(11) DEFAULT NULL,
+  `no_shares` bigint(20) DEFAULT NULL,
+  `net_turnover` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_sec_portfolio_idx` (`sec_id`),
+  CONSTRAINT `fk_sec_portfolio` FOREIGN KEY (`sec_id`) REFERENCES `d_portfolio` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=1090 DEFAULT CHARSET=utf8;
+
+CREATE TABLE `f_eq_sec_qty` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `sec_id` int(11) NOT NULL,
+  `qty_date` date DEFAULT NULL,
+  `quantity` varchar(45) DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `fk_esq_port_id_idx` (`sec_id`),
+  KEY `ix_esq_date` (`qty_date`,`sec_id`),
+  KEY `ix_sec` (`sec_id`),
+  CONSTRAINT `fk_esq_port_id` FOREIGN KEY (`sec_id`) REFERENCES `d_portfolio` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=39 DEFAULT CHARSET=utf8;
+
+CREATE TABLE `f_transaction` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `sec_id` int(11) NOT NULL,
+  `price` decimal(10,3) NOT NULL,
+  `qty` int(11) NOT NULL,
+  `is_buy` tinyint(1) DEFAULT '0',
+  `is_bonus` tinyint(1) DEFAULT '0',
+  `txn_date` date NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_sec_txn_idx` (`sec_id`),
+  KEY `ix_txn_date` (`txn_date`),
+  KEY `ix_txn_sec` (`sec_id`,`is_buy`),
+  CONSTRAINT `fk_sec_txn` FOREIGN KEY (`sec_id`) REFERENCES `d_portfolio` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8;
